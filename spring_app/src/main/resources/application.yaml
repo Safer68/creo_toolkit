@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:${CREOTOOL_PATCH}/config/data/demo
+    username: sa
+    password: password
+    driverClassName: org.h2.Driver
+  liquibase:
+    change-log: db/changelog/changelog.xml
+  jpa:
+    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto:
+  h2:
+    console.enabled: true
+creo:
+  msgFile: ribbon_button_configuration.txt
