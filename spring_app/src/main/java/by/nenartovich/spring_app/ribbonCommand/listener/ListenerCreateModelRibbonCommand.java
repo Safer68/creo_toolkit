@@ -1,36 +1,55 @@
 package by.nenartovich.spring_app.ribbonCommand.listener;
 
 
-import by.nenartovich.spring_app.ui.MessageDialogInfo;
-import by.nenartovich.spring_app.usecasses.ModelService;
-import by.nenartovich.spring_app.usecasses.dto.ModelDto;
+import by.nenartovich.spring_app.creo_service.AssemblyService;
+import by.nenartovich.spring_app.creo_service.ComponentFeatService;
+import by.nenartovich.spring_app.creo_service.DrawingService;
+import by.nenartovich.spring_app.creo_service.ModelService;
+import by.nenartovich.spring_app.ui.ImplMessageDialog;
 import by.nenartovich.spring_app.util.CreoSession;
 import com.ptc.cipjava.jxthrowable;
+import com.ptc.pfc.pfcAssembly.Assembly;
 import com.ptc.pfc.pfcCommand.DefaultUICommandActionListener;
-import com.ptc.pfc.pfcSession.BaseSession;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
+import com.ptc.pfc.pfcComponentFeat.ComponentConstraintType;
+import com.ptc.pfc.pfcComponentFeat.ComponentFeat;
+import com.ptc.pfc.pfcDrawing.Drawing;
+import com.ptc.pfc.pfcModel.Model;
+import com.ptc.pfc.pfcModel.ModelType;
+import com.ptc.pfc.pfcSolid.Solid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Controller;
 
-import java.util.List;
-
-@Component
-@AllArgsConstructor
-public class ListenerCreateModelRibbonCommand extends DefaultUICommandActionListener implements CommandActionListener {
-    private final MessageDialogInfo messageDialog;
-    private final ModelService modelService;
+@Controller
+@RequiredArgsConstructor
+public class ListenerCreateModelRibbonCommand extends DefaultUICommandActionListener {
+    private final ImplMessageDialog messageDialog;
     private final CreoSession creoSession;
+    private final AssemblyService assemblyService;
+    private final ModelService modelService;
+    private final ComponentFeatService componentFeatService;
+    private final DrawingService drawingService;
 
     @Override
     public void OnCommand() throws jxthrowable {
-        BaseSession baseSession = creoSession.getSession();
-        String s = baseSession.GetCurrentDirectory();
-        messageDialog.show(s);
-        List<ModelDto> modelDtos = modelService.getAll();
-        modelDtos.size();
-        if (modelDtos.size() != 0) {
-            ModelDto modelDto = modelDtos.get(1);
-            String s2 = modelDto.name();
-            messageDialog.show(s2);
+        Assembly assembly;
+        Model modelCurrentSession = creoSession.getSession().GetCurrentModel();
+        if (null == modelCurrentSession) {
+            messageDialog.showMessageTypeQuestion("Сборка не открыта!");
+            return;
         }
+        if (modelCurrentSession.GetType() != ModelType.MDL_ASSEMBLY) {
+            messageDialog.showMessageTypeQuestion("Должна быть открыта сборка");
+            return;
+        }
+        assembly = (Assembly) modelCurrentSession;
+        String assemblyName = assembly.GetFileName().replaceAll(".asm", "");
+        Model modelMg = modelService.create(assemblyName + "mg");
+        ComponentFeat componentFeatMg = (ComponentFeat) assemblyService.addComponent(assembly, (Solid) modelMg);
+        componentFeatService.ComponentFeatConstraint(componentFeatMg, ComponentConstraintType.ASM_CONSTRAINT_DEF_PLACEMENT);
+        Assembly assemblyRg = assemblyService.create(assemblyName + "rg");
+        Drawing drawing = drawingService.create(assemblyName, assembly);
+        drawing.AddModel(assemblyRg);
+        drawing.AddModel(modelMg);
+        drawing.Save();
     }
 }

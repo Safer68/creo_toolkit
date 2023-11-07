@@ -2,14 +2,14 @@ package by.nenartovich.spring_app.ribbonCommand;
 
 
 import com.ptc.cipjava.jxthrowable;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class RibbonMenu {
 
     private final List<RibbonCommand> ribbonCommands = new ArrayList<>();

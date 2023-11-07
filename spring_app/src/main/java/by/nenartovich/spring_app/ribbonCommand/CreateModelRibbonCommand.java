@@ -4,19 +4,21 @@ import by.nenartovich.spring_app.ribbonCommand.listener.ListenerCreateModelRibbo
 import by.nenartovich.spring_app.util.CreoSession;
 import com.ptc.cipjava.jxthrowable;
 import com.ptc.pfc.pfcCommand.UICommand;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CreateModelRibbonCommand implements RibbonCommand {
     private final CreoSession session;
     private final ListenerCreateModelRibbonCommand listenerCreateModelRibbonCommand;
-    private final String msgFile = "ribbon_button_configuration.txt";
+    @Value("${creo.msgFile}")
+    private String msgFile;
 
     @Override
     public void getCommand() throws jxthrowable {
         UICommand newSkell = session.getSession().UICreateCommand("newSkell", listenerCreateModelRibbonCommand);
-        newSkell.Designate(msgFile, "newSkell", (String) null, (String) null);
+        newSkell.Designate(msgFile, "newSkell", null, null);
     }
 }

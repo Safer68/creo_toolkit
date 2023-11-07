@@ -7,7 +7,7 @@ java_app_classpath F:\project\creo_toolkit\main\target\creo-jar-with-dependencie
 java_app_class  by.nenartovich.Main
 java_app_start  start
 java_app_stop   stop
-allow_stop      true
+allow_stop      false
 delay_start     false
 text_dir F:\project\creo_toolkit\config\text
 end

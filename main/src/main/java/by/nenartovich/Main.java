@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Objects;
 import java.util.Properties;
 
 import static by.nenartovich.config.ConfigApp.PATCH_FILE_PROPERTIES;
@@ -24,13 +25,17 @@ public class Main {
     public static void start() throws ClassNotFoundException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, MalformedURLException {
         CIPClassLoader cipClassLoader = (CIPClassLoader) Main.class.getClassLoader();
         URL url = cipClassLoader.getResource(PATCH_FILE_PROPERTIES);
-        try (InputStream inputStream = url.openStream()) {
-            properties.load(inputStream);
+        try {
+            assert url != null;
+            try (InputStream inputStream = url.openStream()) {
+                properties.load(inputStream);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        URL[] files = {new File(cipClassLoader.getResource(properties.getProperty("spring.path")).getFile()).toURI().toURL()};
+        URL[] files = {new File(Objects.requireNonNull(cipClassLoader.getResource(properties.getProperty("spring.path"))).getFile()).toURI().toURL()};
+
         classLoader = URLClassLoader.newInstance(files);
         Class<?> aClass = classLoader.loadClass(STARTUP_CLASS_SPRING);
         Method method = aClass.getMethod(STARTUP_METHOD_SPRING, String[].class);
